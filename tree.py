@@ -8,16 +8,18 @@ def add_directory(directory_tree, path, name):
     else:
         print(f"Failed to add '{name}' under '{path}': Invalid path or directory already exists")
 
-def delete_directory(directory_tree, path, name):
-    node = get_node(directory_tree, path)
-    if node is not None and name in node:
-        del node[name]
-        print(f"Directory '{name}' deleted from '{path}'")
+def delete_directory(directory_tree, path):
+    parent_path, _, dir_name = path.rpartition('/')
+    parent_node = get_node(directory_tree, parent_path) if parent_path else directory_tree
+    
+    if parent_node is not None and dir_name in parent_node:
+        del parent_node[dir_name]
+        print(f"Directory '{dir_name}' deleted from '{parent_path or 'root'}'")
     else:
-        print(f"Failed to delete '{name}' from '{path}': Invalid path or directory does not exist")
+        print(f"Failed to delete '{dir_name}' from '{parent_path or 'root'}': Invalid path or directory does not exist")
 
 def get_node(directory_tree, path):
-    if path == "root":
+    if path == "root" or path == "":
         return directory_tree
     path_parts = path.split('/')
     node = directory_tree
@@ -29,7 +31,7 @@ def get_node(directory_tree, path):
     return node
 
 def create_or_get_node(directory_tree, path):
-    if path == "root":
+    if path == "root" or path == "":
         return directory_tree
     path_parts = path.split('/')
     node = directory_tree
@@ -39,38 +41,34 @@ def create_or_get_node(directory_tree, path):
         node = node[part]
     return node
 
-def display(directory_tree, level=0):
+def display(directory_tree, indent=0):
     for name in sorted(directory_tree):
-        print("  " * level + name)
-        display(directory_tree[name], level + 1)
+        print("  " * indent + name)
+        display(directory_tree[name], indent + 1)
 
-if __name__ == "__main__":
-    # Initialize root directory
-    directory_tree = {"root": {}}
+directory_tree = {}
 
-    # Adding directories
-    directories_to_add = [
-        ("root", "Pictures"),
-        ("root/Pictures", "Saved Pictures"),
-        ("root/Pictures/Saved Pictures", "Web Images"),
-        ("root/Pictures/Saved Pictures/Web Images", "Chrome"),
-        ("root/Pictures/Saved Pictures/Web Images", "Opera"),
-        ("root/Pictures/Saved Pictures/Web Images", "Firefox"),
-        ("root/Pictures", "Screenshots"),
-        ("root/Pictures", "Camera Roll"),
-        ("root/Pictures/Camera Roll", "2025"),
-        ("root/Pictures/Camera Roll", "2024"),
-        ("root/Pictures/Camera Roll", "2023")
-    ]
+directories_to_add = [
+    ("", "Pictures"),
+    ("Pictures", "Saved Pictures"),
+    ("Pictures/Saved Pictures", "Web Images"),
+    ("Pictures/Saved Pictures/Web Images", "Chrome"),
+    ("Pictures/Saved Pictures/Web Images", "Opera"),
+    ("Pictures/Saved Pictures/Web Images", "Firefox"),
+    ("Pictures", "Screenshots"),
+    ("Pictures", "Camera Roll"),
+    ("Pictures/Camera Roll", "2025"),
+    ("Pictures/Camera Roll", "2024"),
+    ("Pictures/Camera Roll", "2023")
+]
 
-    for path, name in directories_to_add:
-        add_directory(directory_tree["root"], path[5:], name)
+for path, name in directories_to_add:
+    add_directory(directory_tree, path, name)
 
-    print("\nInitial Directory Structure:")
-    display(directory_tree["root"])
+print("\nInitial Directory Structure:")
+display(directory_tree)
 
-    # Deleting a directory
-    delete_directory(directory_tree["root"], "Pictures/Saved Pictures/Web Images", "Opera")
+delete_directory(directory_tree, "Pictures/Saved Pictures/Web Images/Opera")
 
-    print("\nDirectory Structure After Deletion:")
-    display(directory_tree["root"])
+print("\nDirectory Structure After Deletion:")
+display(directory_tree)
